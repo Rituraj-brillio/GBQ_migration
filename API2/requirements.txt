@@ -1,0 +1,7 @@
+functions-framework==3.*
+certifi
+google-cloud-storage
+pydantic
+snowflake-connector-python
+flask
+gunicorn
