@@ -1,0 +1,19 @@
+{
+  "name_map": [
+    {
+      "source": {
+        "type": "snowflake",
+        "database": "SNOWFLAKE_TO_GBQ",
+        "schema": "NODE",
+        "relation": "Node_with_IP",
+        "attribute": ""
+      },
+      "target": {
+        "database": "brlcto-gbq-migration",
+        "schema": "GBQ_migration",
+        "relation": "NODE_WITH_IP",
+        "attribute": ""
+      }
+    }
+  ]
+}
