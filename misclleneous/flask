@@ -1,0 +1,49 @@
+from flask import Flask, request, jsonify
+from google.cloud import storage
+import json
+
+app = Flask(__name__)
+
+# Function to upload JSON to Google Cloud Storage
+def upload_mapping_json(bucket_name: str, file_name: str, request_data: dict):
+    # Create JSON content
+    mapping = {
+        "gbq_output_table": request_data['gbq_output_table'],
+        "project_id": request_data['project_id'],
+        "region": request_data['region'],
+        "temp_location": request_data['temp_location'],
+        "delimiter": request_data['delimiter'],
+        "gbq_write_mode": request_data['gbq_write_mode']
+    }
+    json_content = json.dumps(mapping, indent=4)
+
+    # Upload JSON file to GCS
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(file_name)
+
+    if blob.exists() and request_data.get('overwrite', True):
+        blob.delete()
+
+    if not blob.exists():
+        blob.upload_from_string(json_content)
+
+    return f"File {file_name} uploaded to bucket {bucket_name} with overwrite={request_data.get('overwrite', True)}"
+
+@app.route('/', methods=['POST'])
+def upload_file():
+    try:
+        bucket_name = request.args.get('bucket_name')
+        file_name = request.args.get('file_name')
+        request_data = request.get_json()
+        
+        if not bucket_name or not file_name:
+            return jsonify({"error": "bucket_name and file_name are required parameters"}), 400
+
+        message = upload_mapping_json(bucket_name, file_name, request_data)
+        return jsonify({"message": message})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=8000)
